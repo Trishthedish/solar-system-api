@@ -1,32 +1,41 @@
 from app import db
 from app.models.planet import Planet
-from flask import request, Blueprint, make_response
+from flask import request, Blueprint, make_response, jsonify
 
 planets_bp = Blueprint("planets", __name__, url_prefix="/planets")
 
-@planets_bp.route("", methods=["POST"])
+@planets_bp.route("", methods=["POST","GET"])
+def handle_planets():
+    if request.method == "POST":
+        request_body = request.get_json(request.data)
+        new_planet = Planet(
+            name=request_body["name"],
+            description=request_body["description"],
+            size=request_body["size"]
+        )
+        db.session.add(new_planet)
+        db.session.commit()
+        return make_response(f"Planet {new_planet.name} succesfully created", 201)
 
-# Create a new Planet
-def create_new_planet():
-    # In order for this to work
-    # The .get_json method needs to passed either:
-    # request.data or fore=True
-    request_body = request.get_json(request.data)
-    new_planet = Planet(
-        name=request_body["name"],
-        description=request_body["description"],
-        size=request_body["size"]
-    )
+    elif request.method == "GET":
+        planets = Planet.query.all()
+        planets_response = []
+        for planet in planets:
+            planets_response.append({
+                "id": planet.id,
+                "name": planet.name,
+                "description": planet.description,
+                "size": planet.size
+            })
+        return jsonify(planets_response)
 
-    db.session.add(new_planet)
-    db.session.commit()
-
-    return make_response(f"Planet {new_planet.name} succesfully created", 201)
-
-# get all planets
-def get_all_planets():
-    return "get all planets"
-
-# get/ read specific planet.
-def get_specific_planet_info():
-    return "specific info for planet"
+@planets_bp.route("/<planet_id>", methods=["GET", "PUT", "DELETE"])
+def handle_planet(planet_id):
+    planet = Planet.query.get(planet_id)
+    if request.method == "GET":
+        return {
+            "id": planet.id,
+            "name": planet.name,
+            "description": planet.description,
+            "size": planet.size
+        }

@@ -32,6 +32,7 @@ def handle_planets():
 @planets_bp.route("/<planet_id>", methods=["GET", "PUT", "DELETE"])
 def handle_planet(planet_id):
     planet = Planet.query.get(planet_id)
+
     if request.method == "GET":
         return {
             "id": planet.id,
@@ -39,3 +40,16 @@ def handle_planet(planet_id):
             "description": planet.description,
             "size": planet.size
         }
+
+    elif request.method == "PUT":
+        form_data = request.get_json()
+        planet.name = form_data["name"]
+        planet.description = form_data["description"]
+        planet.size = form_data["size"]
+        db.session.commit()
+        return make_response(f"Planet #{planet.id} has been updated.", 201)
+
+    elif request.method == "DELETE":
+        db.session.delete(planet)
+        db.session.commit()
+        return make_response(f"Planet #{planet.id} sucessfully deleted.")

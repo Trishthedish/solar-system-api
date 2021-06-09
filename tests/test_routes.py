@@ -18,3 +18,11 @@ def test_get_one_planet(client, two_saved_planets):
     "description": "big, red",
     "size": 55
   }
+
+# GET /planets/1 with no data in test database (no fixture) returns a 404
+def test_get_one_planet_without_data_returns_404(client):
+  response = client.get("/planets/22")
+  response_body = response.get_json()
+
+  assert response_body == None
+  assert response.status_code == 404

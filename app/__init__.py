@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 
 db = SQLAlchemy()
-migrate = Migrate()
+migrate = Migrate(app, db)
 load_dotenv()
 
 def create_app(test_config=None):
@@ -24,7 +24,7 @@ def create_app(test_config=None):
 
     db.init_app(app)
     migrate.init_app(app, db)
-
+    
     from app.models.planet import Planet
     # Register Blueprints here:
     from .routes import planets_bp
